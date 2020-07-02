@@ -1,11 +1,3 @@
-<head>
-<style>
-img {
-  width: 300
-}
-</style>
-</head>
-
 # Custom Authorizers
 
 ## Prerequisites
@@ -20,14 +12,13 @@ For the client:
 * Node.js 10 or later
 * jq (`sudo apt-get install jq`)
 
-## Solution 
 > **DISCLAIMER**: This solution is intended for demo purposes only and should not be used as is in a production environment without further works on the code quality and security.
 
 
 ## Deploy the backend via CDK
 
 The custom authorizer logic is deployed via the CDK.
-You can examine the definition of the resources that are going to be created in the `lib/ruuvi_poc-stack.ts` file.
+You can examine the definition of the resources that are going to be created in the `lib/jwt-iot-custom-authorizer-stack.ts` file.
 
 Run the following commands to download all the project dependencies and compile the stack:
 
@@ -44,13 +35,9 @@ cdk deploy
 
 **NOTE**: if this is the first time you use CDK on this AWS account and region the deploy will fail. Read the instructions printed on screen on how to bootstrap the account to be able to use the CDK tool.
 
-
 The above commands will print out few output lines, with the custom authorizer lamnda arn, and the api gateway endpoint. Please note these down as they will be needed later.
 
-![](images/README.md-2020-02-11-15-01-38.png)
 
-
- 
 ### Create the signing key pair
 
 The custom authorizer validated that the token that is provided is signed with a known key. This prevents malicious users to trigger you custom authorizer lambda function as AWS IoT Core will deny access if the token and the token signature do not match.
@@ -80,8 +67,10 @@ arn=<lambda arn from CDK>
 resp=$(aws iot create-authorizer \
   --authorizer-name "TokenAuthorizer" \
   --authorizer-function-arn $arn \
-  --status ACTIVE )
-auth_arn=$(echo $resp | jq ".authorizerArn" -)
+  --status ACTIVE \
+  --token-key-name token \
+  --token-signing-public-keys KEY1="$key")
+auth_arn=$(echo $resp | jq -r .authorizerArn -)
 ```
 
 Take note of the arn of the token authorizer, we need it to add give the iot service the permission to invoke this lambda function on your behalf when a new connection request is made.
@@ -90,19 +79,27 @@ Take note of the arn of the token authorizer, we need it to add give the iot ser
 aws lambda add-permission \
   --function-name  $arn \
   --principal iot.amazonaws.com \
-  --statement-id Id-123 \
+  --statement-id Id-1234 \
   --action "lambda:InvokeFunction" \
-  --source-arn $auth_arn \
+  --source-arn $auth_arn
 ```
 
 
 #### Test the authorizer
 
-To test that the authorizer works fine, you can also use the `test/authTest.js` client.
+To test that the authorizer works fine, you can also use the `test/authTest.js` client. 
 
 ```
-node test/authTest.js --key_path <key path> --endpoint <endpoint> --id <id> [--verbose]
+node test/authTest.js --key_path <key path> --endpoint <endpoint> --id <id> [--verbose] [--authorizer]
 ```
+
+where:
+* **key_path** is the path to the private key PEM encoded file
+* **endpoint** is the FQDN of your AWS IoT endpoint (get it via `aws iot describe-endpoint --endpoint-type iot:Data-ATS` on from the console)
+* **id** is the client id, thingName
+* **verbose** prints out the encoded JWT token and signature
+* **authorizer** in case you need to specify another authorizer than TokenAuthorizer
+
 
 The test app will publish message to a topic `d/<id>` every 5 sec. Use the iot console.
 
@@ -118,7 +115,21 @@ aws iot test-invoke-authorizer \
 
 Use the `--verbose` mode in the authTest.js call to get the token and singature and pass those to the above command.
 
-## How to use the tokens
+## Testing with aws-iot-device-sdk-cpp-v2
+
+To test the custom authorizer with the CPP device SDK v2 proceed as follow:
+
+* Clone the github repo
+* Compile the code following the instructions
+* execute the `samples/mqtt/raw-pub-sub` sample with the following args:
+```
+  --endpoint <iot endpoint> 
+  --use_websocket --auth_params token=<token>,x-amz-customauthorizer-name=TokenAuthorizer,x-amz-customauthorizer-signature=<signature> --topic d/<id>
+```
+
+You can get the `token` and `signature` values from the authTest.js code running with --verbose.
+
+## About the tokens and security
 
 In this example the client is responsible of signing the token which is obviously not secure, as the client could craft his own proviledges or impersonate another device.
 
