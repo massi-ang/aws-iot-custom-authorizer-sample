@@ -115,7 +115,7 @@ aws iot test-invoke-authorizer \
 
 Use the `--verbose` mode in the authTest.js call to get the token and singature and pass those to the above command.
 
-## Testing with aws-iot-device-sdk-cpp-v2
+## Testing with [aws-iot-device-sdk-cpp-v2](https://github.com/aws/aws-iot-device-sdk-cpp-v2)
 
 To test the custom authorizer with the CPP device SDK v2 proceed as follow:
 
@@ -127,7 +127,7 @@ To test the custom authorizer with the CPP device SDK v2 proceed as follow:
   --use_websocket --auth_params token=<token>,x-amz-customauthorizer-name=TokenAuthorizer,x-amz-customauthorizer-signature=<signature> --topic d/<id>
 ```
 
-You can get the `token` and `signature` values from the authTest.js code running with --verbose.
+You can get the `token` and `signature` values from the authTest.js code running with --verbose. For `id` use the same value specified when running authTest.js.
 
 ## About the tokens and security
 
