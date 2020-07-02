@@ -43,6 +43,7 @@ The above commands will print out few output lines, with the custom authorizer l
 The custom authorizer validated that the token that is provided is signed with a known key. This prevents malicious users to trigger you custom authorizer lambda function as AWS IoT Core will deny access if the token and the token signature do not match.
 
 The token signature is generated using an RSA key. The private key is used by the client to sign the authorization token while the the public key will be associated with the custom authorizer.
+This signature algorithm is equivalent to the RSA256 algorithm adopted by the JWT token [RFC 7518](https://tools.ietf.org/html/rfc7518#section-3). We are going to use this property to simplify the signing process.
 
 To create the key pair follow these steps:
 
@@ -85,9 +86,19 @@ aws lambda add-permission \
 ```
 
 
-#### Test the authorizer
+### Test the authorizer
 
 To test that the authorizer works fine, you can also use the `test/authTest.js` client. 
+
+This code creates a JWT token as the following and signs it with RSA256 using the private key:
+
+```json
+{
+  "sub": "id1234",
+  "exp": 1593699087
+}
+```
+
 
 ```
 node test/authTest.js --key_path <key path> --endpoint <endpoint> --id <id> [--verbose] [--authorizer]
