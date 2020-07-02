@@ -14,6 +14,5 @@
   "author": "Massimiliano Angelino",
   "license": "Apache-2.0",
   "dependencies": {
-    "jsonwebtoken": "^8.5.1"
   }
 }
