@@ -1,0 +1,19 @@
+{
+  "name": "iot-custom-auth",
+  "version": "1.0.0",
+  "description": "A custom authorizer for IoT using JWT tokens",
+  "main": "lambda.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jwt",
+    "iot",
+    "aws"
+  ],
+  "author": "Massimiliano Angelino",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  }
+}
