@@ -142,7 +142,7 @@ You can get the `token` and `signature` values from the authTest.js code running
 
 ## About the tokens and security
 
-In this example the client is responsible of signing the token which is obviously not secure, as the client could craft his own proviledges or impersonate another device.
+In this example the client is responsible of signing the token which is obviously not secure, as the client could craft his own priviledges or impersonate another device.
 
 The token and its signature should therefore be generated in the backend, and possibly also encrypted. 
 
