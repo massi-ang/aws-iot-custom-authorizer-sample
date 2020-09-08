@@ -37,6 +37,11 @@ cdk deploy
 
 The above commands will print out few output lines, with the 2 custom authorizer lamnda arn. one called `lambdaArn` and the other `lambdaArnMqtt`. Please note these down as they will be needed later.
 
+You can change the default values for the username, password and token for the Mqtt authorizer by invoking the `cdk deploy` with the parameters:
+
+```
+cdk deploy --parameters username=admin --parameters password=admin --parameters token=XXX
+```
 
 ### Create the signing key pair
 
