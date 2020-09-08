@@ -15,9 +15,23 @@ export class JwtIotCustomAuthorizerStack extends cdk.Stack {
       }
     })
 
+    let customAuthorizerLambdaMQTT = new lambda.Function(this, 'iot-custom-auth-mqtt', {
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'lambda.handler',
+      code: new lambda.AssetCode('./lambda/iot-mqtt-custom-auth'),
+      environment: {
+        "AWS_ACCOUNT": this.account,
+      }
+    })
+
     new cdk.CfnOutput(this, "lambdaArn", {
       description: "CustomAuth Arn",
       value: customAuthorizerLambda.functionArn
+    })
+
+    new cdk.CfnOutput(this, "lambdaArnMqtt", {
+      description: "CustomAuthMQTT Arn",
+      value: customAuthorizerLambdaMQTT.functionArn
     })
 
   }
