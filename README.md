@@ -35,7 +35,7 @@ cdk deploy
 
 **NOTE**: if this is the first time you use CDK on this AWS account and region the deploy will fail. Read the instructions printed on screen on how to bootstrap the account to be able to use the CDK tool.
 
-The above commands will print out few output lines, with the custom authorizer lamnda arn, and the api gateway endpoint. Please note these down as they will be needed later.
+The above commands will print out few output lines, with the 2 custom authorizer lamnda arn. one called `lambdaArn` and the other `lambdaArnMqtt`. Please note these down as they will be needed later.
 
 
 ### Create the signing key pair
@@ -54,7 +54,7 @@ openssl rsa -in myPrivateKey.pem -pubout > mykey.pub
 
 The file `mykey.pub` will contain the public key in PEM format that you will need to configure for the authorizer in the next step.
 
-##  Custom authorizer configuration
+##  Custom authorizer configuration (non MQTT)
 
 In this step we are going to configure the custom authorizer in AWS IoT Core. You can find more information about custom authorizers in the [documentation](https://docs.aws.amazon.com/iot/latest/developerguide/custom-authorizer.html).
 
@@ -63,7 +63,7 @@ In this step we are going to configure the custom authorizer in AWS IoT Core. Yo
 We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda fucntion has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
 
 ```bash
-arn=<lambda arn from CDK>
+arn=<lambdaArn from CDK>
 
 resp=$(aws iot create-authorizer \
   --authorizer-name "TokenAuthorizer" \
@@ -84,6 +84,7 @@ aws lambda add-permission \
   --action "lambda:InvokeFunction" \
   --source-arn $auth_arn
 ```
+
 
 
 ### Test the authorizer
@@ -147,4 +148,49 @@ In this example the client is responsible of signing the token which is obviousl
 The token and its signature should therefore be generated in the backend, and possibly also encrypted. 
 
 Rotations of the token can be implemented via the MQTT protocol, and the only issue to solve would be how to obtain the initial token to the device. This could be done via an external API, a companion app, a registration step, etc. and is out of the scope of this demo.
+
+
+##  MQTT Custom authorizer configuration
+
+In this step we are going to configure the custom authorizer in AWS IoT Core. You can find more information about custom authorizers in the [documentation](https://docs.aws.amazon.com/iot/latest/developerguide/custom-authorizer.html).
+
+### CLI
+
+We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda fucntion has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
+
+```bash
+arn=<lambdaArnMqtt arn from CDK>
+
+resp=$(aws iot create-authorizer \
+  --authorizer-name "MQTTTokenAuthorizer" \
+  --authorizer-function-arn $arn \
+  --status ACTIVE \
+
+auth_arn=$(echo $resp | jq -r .authorizerArn -)
+```
+
+Take note of the arn of the token authorizer, we need it to add give the iot service the permission to invoke this lambda function on your behalf when a new connection request is made.
+
+```bash
+aws lambda add-permission \
+  --function-name  $arn \
+  --principal iot.amazonaws.com \
+  --statement-id Id-1234 \
+  --action "lambda:InvokeFunction" \
+  --source-arn $auth_arn
+```
+
+
+
+### Test the authorizer
+
+For this test we provide a Python client using the Python Aws Crt libraries.
+
+```
+pip install -r requirements.txt
+python --endpoint <endpoint> --topic test/mqtt
+```
+
+Where
+* **endpoint** is the FQDN of your AWS IoT endpoint (get it via `aws iot describe-endpoint --endpoint-type iot:Data-ATS` on from the console)
 
