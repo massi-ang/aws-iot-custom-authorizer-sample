@@ -3,9 +3,15 @@
 exports.handler = async function (event, context) {
     console.debug(event)
     if (event.protocolData !== undefined && event.protocolData.mqtt != undefined) {
-        const username = event.protocolData.mqtt.username;
+        let username = event.protocolData.mqtt.username;
         const password = Buffer.from(event.protocolData.mqtt.password, 'base64').toString()
         console.debug(`Got [${username}] and [${password}]`)
+        let match = username.match(/^(.*)\?(.*)$/)
+        let query = undefined
+        if (match) {
+            username = match[1];
+            query = match[2];
+        }
         if (username === 'aladdin' && password === 'opensesame') {
             return buildPolicy(username, true)
         }

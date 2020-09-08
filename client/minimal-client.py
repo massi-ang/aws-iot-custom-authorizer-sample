@@ -15,7 +15,9 @@ parser = argparse.ArgumentParser(
     description="Send and receive messages through and MQTT connection.")
 parser.add_argument('--endpoint', required=True, help="Your AWS IoT custom endpoint, not including a port. " +
                                                       "Ex: \"abcd123456wxyz-ats.iot.us-east-1.amazonaws.com\"")
-
+parser.add_argument('--root-ca', help="File path to root certificate authority, in PEM format. " +
+                                      "Necessary if MQTT server uses a certificate that's not already in " +
+                                      "your trust store.")
 parser.add_argument('--client-id', default="test-" +
                     str(uuid4()), help="Client ID for MQTT connection.")
 parser.add_argument('--topic', default="test/topic",
@@ -83,8 +85,9 @@ if __name__ == '__main__':
     tls_options = io.TlsContextOptions()
     tls_options.alpn_list = ['mqtt']
 
-    tls_options.override_default_trust_store_from_path(ca_dirpath=None,
-        ca_filepath=args.root_ca)
+    if args.root_ca:
+        tls_options.override_default_trust_store_from_path(ca_dirpath=None,
+            ca_filepath=args.root_ca)
     tls_ctx = io.ClientTlsContext(options=tls_options)
     client = mqtt.Client(client_bootstrap, tls_ctx)
 
