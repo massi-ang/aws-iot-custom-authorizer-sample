@@ -1,5 +1,6 @@
 'use strict'
 
+
 exports.handler = async function (event, context) {
     console.debug(event)
     if (event.protocolData !== undefined && event.protocolData.mqtt != undefined) {
@@ -12,11 +13,11 @@ exports.handler = async function (event, context) {
             username = match[1];
             query = match[2];
         }
-        if (username === 'aladdin' && password === 'opensesame') {
+        if (username === process.env['USERNAME'] && password === process.env['PASSWORD']) {
             return buildPolicy(username, true)
         }
     } 
-    if (event.token !== undefined && event.token == 'allow') {
+    if (event.token !== undefined && event.token == process.env['TOKEN']) {
         return buildPolicy('username', true)
     }
     console.error('Invalid or missing username/password')

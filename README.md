@@ -152,7 +152,7 @@ Rotations of the token can be implemented via the MQTT protocol, and the only is
 
 ##  MQTT Custom authorizer configuration
 
-In this step we are going to configure the custom authorizer in AWS IoT Core. You can find more information about custom authorizers in the [documentation](https://docs.aws.amazon.com/iot/latest/developerguide/custom-authorizer.html).
+**NOTE**: The sample authorizer uses an hard
 
 ### CLI
 
@@ -162,9 +162,10 @@ We first create the authorizer, giving it a name and associating it with the lam
 arn=<lambdaArnMqtt arn from CDK>
 
 resp=$(aws iot create-authorizer \
-  --authorizer-name "MQTTTokenAuthorizer" \
+  --authorizer-name "MqttAuthorizer" \
   --authorizer-function-arn $arn \
   --status ACTIVE \
+  --signing-disabled)
 
 auth_arn=$(echo $resp | jq -r .authorizerArn -)
 ```
@@ -194,3 +195,75 @@ python --endpoint <endpoint> --topic test/mqtt
 Where
 * **endpoint** is the FQDN of your AWS IoT endpoint (get it via `aws iot describe-endpoint --endpoint-type iot:Data-ATS` on from the console)
 
+The only particularity of this code is about the initialization of the client, and in particualar the TLS context. The default static methods will enable mutual authentication, which is not something we want in this case. 
+
+The relevant lines are the following:
+
+```python
+tls_options = io.TlsContextOptions()
+tls_options.alpn_list = ['mqtt']
+
+if args.root_ca:
+    tls_options.override_default_trust_store_from_path(ca_dirpath=None,
+        ca_filepath=args.root_ca)
+tls_ctx = io.ClientTlsContext(options=tls_options)
+client = mqtt.Client(client_bootstrap, tls_ctx)
+
+username = args.username
+if args.authorizer_name:
+    username += f'?x-amz-customauthorizer-name={args.authorizer_name}'
+if args.token:
+    username += f'&token={args.token}'
+mqtt_connection = mqtt.Connection(client=client,
+    host_name=args.endpoint,
+    port=443,
+    on_connection_interrupted=on_connection_interrupted,
+    on_connection_resumed=on_connection_resumed,
+    client_id=args.client_id,
+    clean_session=True,
+    keep_alive_secs=6,
+    username=username,
+    password=args.password)
+
+```
+
+You can avoid specifyin the authorizer name as part of the `username` by setting the custom authorizer as the default authorizer for the endpoint using the following command:
+
+```
+aws iot set-default-authorizer --authorizer-name MqttAuthorizer
+```
+
+
+### Use a token instead of username/password
+
+Instead of using username/password for MQTT authentication, you can also use a bearer token. In this case you will need to specify a token name when creating the authorizer and use the signing option to better secure your endpoint.
+
+Let's create a new authorizer using the same authorizer lambda that already has code to use the token:
+
+```bash
+arn=<lambdaArnMqtt arn from CDK>
+
+resp=$(aws iot create-authorizer \
+  --authorizer-name "MqttTokenAuthorizer" \
+  --authorizer-function-arn $arn \
+  --status ACTIVE
+  --token-key-name token
+  --signing-disabled)
+
+auth_arn=$(echo $resp | jq -r .authorizerArn -)
+
+aws lambda add-permission \
+  --function-name  $arn \
+  --principal iot.amazonaws.com \
+  --statement-id Id-1234 \
+  --action "lambda:InvokeFunction" \
+  --source-arn $auth_arn
+```
+
+To test it, execute the client with the following options:
+
+```bash
+endpoint=$(aws iot describe-endpoint --type data:iot-ats)
+python client/minimal-client.py --endpoint $endpoint \
+  --topic test/mqt --token allow --authorizer-name MqttTokenAuthorizer --username admin --password dummy
+```

@@ -20,6 +20,12 @@ parser.add_argument('--root-ca', help="File path to root certificate authority, 
                                       "your trust store.")
 parser.add_argument('--client-id', default="test-" +
                     str(uuid4()), help="Client ID for MQTT connection.")
+parser.add_argument('--username', default="",
+                    help="MQTT username.")
+parser.add_argument('--password', default="", help="MQTT password.")
+parser.add_argument('--token', help="A token to be passed to the MQTT authorizer instead of the password")
+parser.add_argument('--authorizer-name', help="The name of the custom authorizer in case is is not set as default")
+
 parser.add_argument('--topic', default="test/topic",
                     help="Topic to subscribe to, and publish messages to.")
 parser.add_argument('--message', default="Hello World!", help="Message to publish. " +
@@ -28,6 +34,7 @@ parser.add_argument('--count', default=10, type=int, help="Number of messages to
                                                           "Specify 0 to run forever.")
 parser.add_argument('--verbosity', choices=[x.name for x in io.LogLevel], default=io.LogLevel.NoLogs.name,
                     help='Logging level')
+            
 
 # Using globals to simplify sample code
 args = parser.parse_args()
@@ -91,6 +98,11 @@ if __name__ == '__main__':
     tls_ctx = io.ClientTlsContext(options=tls_options)
     client = mqtt.Client(client_bootstrap, tls_ctx)
 
+    username = args.username
+    if args.authorizer_name:
+        username += f'?x-amz-customauthorizer-name={args.authorizer_name}'
+    if args.token:
+        username += f'&token={args.token}'
     mqtt_connection = mqtt.Connection(client=client,
         host_name=args.endpoint,
         port=443,
@@ -99,8 +111,8 @@ if __name__ == '__main__':
         client_id=args.client_id,
         clean_session=True,
         keep_alive_secs=6,
-        username='aladdin?x-amz-customauthorizer-name=MqttAuthorizer',
-        password='opensesame')
+        username=username,
+        password=args.password)
 
     print("Connecting to {} with client ID '{}'...".format(
         args.endpoint, args.client_id))
