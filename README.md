@@ -35,7 +35,7 @@ cdk deploy
 
 **NOTE**: if this is the first time you use CDK on this AWS account and region the deploy will fail. Read the instructions printed on screen on how to bootstrap the account to be able to use the CDK tool.
 
-The above commands will print out few output lines, with the 2 custom authorizer lamnda arn. one called `lambdaArn` and the other `lambdaArnMqtt`. Please note these down as they will be needed later.
+The above commands will print out few output lines, with the 2 custom authorizer lambda arn. one called `lambdaArn` and the other `lambdaArnMqtt`. Please note these down as they will be needed later.
 
 You can change the default values for the username, password and token for the Mqtt authorizer by invoking the `cdk deploy` with the parameters:
 
@@ -65,7 +65,7 @@ In this step we are going to configure the custom authorizer in AWS IoT Core. Yo
 
 ### CLI
 
-We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda fucntion has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
+We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda function has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
 
 ```bash
 arn=<lambdaArn from CDK>
@@ -118,7 +118,7 @@ where:
 * **authorizer** in case you need to specify another authorizer than TokenAuthorizer
 
 
-The test app will publish message to a topic `d/<id>` every 5 sec. Use the iot console.
+The test app will publish message to a topic `d/<id>` every 5 sec. Use the iot console to check the messages are being received.
 
 #### If you get an error
 
@@ -130,7 +130,7 @@ aws iot test-invoke-authorizer \
   --token <token> --token-signature <signature>
 ```
 
-Use the `--verbose` mode in the authTest.js call to get the token and singature and pass those to the above command.
+Use the `--verbose` mode in the authTest.js call to get the token and signature and pass those to the above command.
 
 ## Testing with [aws-iot-device-sdk-cpp-v2](https://github.com/aws/aws-iot-device-sdk-cpp-v2)
 
@@ -148,7 +148,7 @@ You can get the `token` and `signature` values from the authTest.js code running
 
 ## About the tokens and security
 
-In this example the client is responsible of signing the token which is obviously not secure, as the client could craft his own priviledges or impersonate another device.
+In this example the client is responsible of signing the token which is obviously not secure, as the client could craft his own privileges or impersonate another device.
 
 The token and its signature should therefore be generated in the backend, and possibly also encrypted. 
 
@@ -161,7 +161,7 @@ Rotations of the token can be implemented via the MQTT protocol, and the only is
 
 ### CLI
 
-We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda fucntion has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
+We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda function has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
 
 ```bash
 arn=<lambdaArnMqtt arn from CDK>
@@ -200,7 +200,7 @@ python --endpoint <endpoint> --topic test/mqtt
 Where
 * **endpoint** is the FQDN of your AWS IoT endpoint (get it via `aws iot describe-endpoint --endpoint-type iot:Data-ATS` on from the console)
 
-The only particularity of this code is about the initialization of the client, and in particualar the TLS context. The default static methods will enable mutual authentication, which is not something we want in this case. 
+The only particularity of this code is about the initialization of the client, and in particular the TLS context. The default static methods will enable mutual authentication, which is not something we want in this case. 
 
 The relevant lines are the following:
 
@@ -232,7 +232,7 @@ mqtt_connection = mqtt.Connection(client=client,
 
 ```
 
-You can avoid specifyin the authorizer name as part of the `username` by setting the custom authorizer as the default authorizer for the endpoint using the following command:
+You can avoid specifying the authorizer name as part of the `username` by setting the custom authorizer as the default authorizer for the endpoint using the following command:
 
 ```
 aws iot set-default-authorizer --authorizer-name MqttAuthorizer

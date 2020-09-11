@@ -2,18 +2,18 @@
 
 exports.handler = async function (event, context) {
     console.debug(event)
-    let token = undefined
+    var token = undefined
     if (event.protocolData !== undefined) {
         const queryString = event.protocolData.http.queryString
         const params = new URLSearchParams(queryString);
         token = params.get("token")
     }
 
-    if (token === undefined) {
+    if (token === undefined || token === null) {
         console.debug('Trying to get the token from the payload')
         token = event.token
     }
-    if (token === undefined) {
+    if (token === undefined || token == null) {
         console.warn("Cannot find any token in the request")
         return buildPolicy(null, false)
     }
