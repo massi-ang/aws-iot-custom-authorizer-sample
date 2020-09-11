@@ -94,16 +94,7 @@ aws lambda add-permission \
 
 ### Test the authorizer
 
-To test that the authorizer works fine, you can also use the `test/authTest.js` client. 
-
-This code creates a JWT token as the following and signs it with RSA256 using the private key:
-
-```json
-{
-  "sub": "id1234",
-  "exp": 1593699087
-}
-```
+To test that the authorizer works fine, you can also use the `test/authTest.js` client or the `test/authTestv1.js`, which use the [aws-crt-nodejs](https://github.com/awslabs/aws-crt-nodejs) and the [v1 node sdk](https://github.com/aws/aws-iot-device-sdk-js) respectively . 
 
 
 ```
@@ -118,7 +109,19 @@ where:
 * **authorizer** in case you need to specify another authorizer than TokenAuthorizer
 
 
-The test app will publish message to a topic `d/<id>` every 5 sec. Use the iot console to check the messages are being received.
+
+The client code creates a JWT token as the following and signs it with RSA256 using the private key:
+
+```json
+{
+  "sub": <id>,
+  "exp": 1593699087
+}
+```
+
+The `sub` in the token is used by the authorizer to define the policy applicable to the connection, and will allow publishing only on a topic `d/<sub>`
+
+The test app will publish message to a topic `d/<id>` every 5 sec. Use the [iot console](https://console.aws.amazon.com/iot/home?#/test) to check the messages are being received.
 
 #### If you get an error
 
@@ -185,8 +188,6 @@ aws lambda add-permission \
   --action "lambda:InvokeFunction" \
   --source-arn $auth_arn
 ```
-
-
 
 ### Test the authorizer
 

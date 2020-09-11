@@ -49,7 +49,6 @@ const yargs = require('yargs');
 
         const client_bootstrap = new crt.io.ClientBootstrap();
         const tls_ctx_options = new crt.io.TlsContextOptions();
-        //tls_ctx_options.ca_filepath = 'root.ca.pem';
         tls_ctx_options.verify_peer = true;
         const socket_options = new crt.io.SocketOptions();
         const tls_ctx = new crt.io.TlsContext(tls_ctx_options);
@@ -87,14 +86,13 @@ const yargs = require('yargs');
         console.log('Connected')
         let topic = `d/${token.sub}`
 
-        // setInterval(async () => {
-            
-        //     console.log(`Publishing message at time ${Date.now()} to topic ${topic}`)
-        //     //const packet = await
-        //     await connection.publish(topic,
-        //         JSON.stringify({ 'msg': 'Hello via SDK v2 using websocket and custom auth ', 'ts': Date.now() }), 0);
-        //     console.log(`Published`)
-        // }, 1000)
+        setInterval(async () => {           
+            console.log(`Publishing message at time ${Date.now()} to topic ${topic}`)
+
+            await connection.publish(topic,
+                JSON.stringify({ 'msg': 'Hello via SDK v2 using websocket and custom auth ', 'ts': Date.now() }), 0);
+            console.log(`Published`)
+        }, 1000)
     } catch (err) {
         console.error(err);
         process.exit(1);
