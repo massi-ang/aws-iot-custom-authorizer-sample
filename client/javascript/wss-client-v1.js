@@ -1,3 +1,13 @@
+/* 
+ *  This is the default license template.
+ *  
+ *  File: wss-client-v1.js
+ *  Author: angmas
+ *  Copyright (c) 2020 angmas
+ *  
+ *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
+ */
+
 const device = require('aws-iot-device-sdk').device
 const crypto = require('crypto')
 const fs = require('fs')

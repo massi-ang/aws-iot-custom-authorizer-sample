@@ -1,5 +1,7 @@
 # Custom Authorizers
 
+This sample code provides two AWS IoT custom authorizers implementations: one that works for WebSocket connections, and one for MQTT connections. It is of course possible to use a single
+
 ## Prerequisites
 
 * An AWS Account
@@ -94,20 +96,32 @@ aws lambda add-permission \
 
 ### Test the authorizer
 
-To test that the authorizer works fine, you can also use the `test/authTest.js` client or the `test/authTestv1.js`, which use the [aws-crt-nodejs](https://github.com/awslabs/aws-crt-nodejs) and the [v1 node sdk](https://github.com/aws/aws-iot-device-sdk-js) respectively . 
+
+To test the authorizer you can use of the provided clients. 
+
+For javascript the client is in  `client/javascript` folder and works only for WebSocket. This client uses the [v1 node sdk](https://github.com/aws/aws-iot-device-sdk-js). 
+For python the client is in `client/python/minimal-wss-client.py`.
 
 
 ```
-node test/authTest.js --key_path <key path> --endpoint <endpoint> --id <id> [--verbose] [--authorizer]
+node client/javascript/wss-client-v1.js --key_path <key path> --endpoint <endpoint> --id <id> [--verbose] [--authorizer_name] [--token_name]
+```
+
+```
+python client/python/minimal-wss-client.py --key_path <key path> --endpoint <endpoint> --id <id> [--verbose] [--authorizer_name] [--token_name] [--token] [--signature]
 ```
 
 where:
-* **key_path** is the path to the private key PEM encoded file
-* **endpoint** is the FQDN of your AWS IoT endpoint (get it via `aws iot describe-endpoint --endpoint-type iot:Data-ATS` on from the console)
-* **id** is the client id, thingName
-* **verbose** prints out the encoded JWT token and signature
-* **authorizer** in case you need to specify another authorizer than TokenAuthorizer
+* **key_path** is the path to the private key PEM encoded file.
+* **endpoint** is the FQDN of your AWS IoT endpoint (get it via `aws iot describe-endpoint --endpoint-type iot:Data-ATS` on from the console).
+* **id** is the client id, thingName.
+* **verbose** prints out the encoded JWT token and signature.
+* **authorizer_name** in case you need to specify another authorizer than TokenAuthorizer.
+* **token_name** in case you need to specify another token key name than token.
 
+For the python client you need also to pass also the token and signature values as the client does not generate them.
+
+You can obtain the values by running `node client/javascript/token-gen.js --id <id> --key_path <path to private key>`. 
 
 
 The client code creates a JWT token as the following and signs it with RSA256 using the private key:
@@ -147,7 +161,8 @@ To test the custom authorizer with the CPP device SDK v2 proceed as follow:
   --use_websocket --auth_params token=<token>,x-amz-customauthorizer-name=TokenAuthorizer,x-amz-customauthorizer-signature=<signature> --topic d/<id>
 ```
 
-You can get the `token` and `signature` values from the authTest.js code running with --verbose. For `id` use the same value specified when running authTest.js.
+You can get the `token` and `signature` values running `node client/javascript/token-gen.js --id <id> --key_path <path to private key>`. 
+Use the same value for the `id` used to generate the token in the topic value passed to the client.
 
 ## About the tokens and security
 
@@ -164,7 +179,7 @@ Rotations of the token can be implemented via the MQTT protocol, and the only is
 
 ### CLI
 
-We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda function has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
+We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda function has been created in the previous step. You can examine the code in `lambda/iot-mqtt-custom-auth/lambda.js`.
 
 ```bash
 arn=<lambdaArnMqtt arn from CDK>

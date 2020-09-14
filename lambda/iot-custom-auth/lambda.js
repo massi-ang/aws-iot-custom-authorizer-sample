@@ -1,3 +1,13 @@
+/* 
+ *  This is the default license template.
+ *  
+ *  File: lambda.js
+ *  Author: angmas
+ *  Copyright (c) 2020 angmas
+ *  
+ *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
+ */
+
 'use strict'
 
 exports.handler = async function (event, context) {
