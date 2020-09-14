@@ -164,6 +164,8 @@ To test the custom authorizer with the CPP device SDK v2 proceed as follow:
 You can get the `token` and `signature` values running `node client/javascript/token-gen.js --id <id> --key_path <path to private key>`. 
 Use the same value for the `id` used to generate the token in the topic value passed to the client.
 
+You can also use the java SDK as it provides a [raw-pub-sub](https://github.com/aws/aws-iot-device-sdk-java-v2/tree/master/samples/RawPubSub) implementation.
+
 ## About the tokens and security
 
 In this example the client is responsible of signing the token which is obviously not secure, as the client could craft his own privileges or impersonate another device.
@@ -285,6 +287,9 @@ To test it, execute the client with the following options:
 
 ```bash
 endpoint=$(aws iot describe-endpoint --type data:iot-ats)
-python client/minimal-client.py --endpoint $endpoint \
+python client/python/minimal-mqtt-client.py --endpoint $endpoint \
   --topic test/mqt --token allow --authorizer-name MqttTokenAuthorizer --username admin --password dummy
 ```
+
+You can also test the MQTT/TLS connection with the `raw-pub-sub` sample client available in the [Java](https://github.com/aws/aws-iot-device-sdk-java-v2) 
+and [CPP](https://github.com/aws/aws-iot-device-sdk-cpp-v2) SDKs.
