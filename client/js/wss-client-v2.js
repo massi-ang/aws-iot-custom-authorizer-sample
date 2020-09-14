@@ -1,5 +1,4 @@
 const crt = require('aws-crt');
-const crypto = require('crypto');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const yargs = require('yargs');
@@ -47,6 +46,7 @@ const yargs = require('yargs');
     try {
         crt.io.enable_logging(crt.io.LogLevel.INFO)
 
+        
         const client_bootstrap = new crt.io.ClientBootstrap();
         const tls_ctx_options = new crt.io.TlsContextOptions();
         tls_ctx_options.verify_peer = true;
@@ -73,6 +73,7 @@ const yargs = require('yargs');
             port: 443,
             clean_session: true,
             tls_ctx: tls_ctx,
+            timeout: 3000,
             use_websocket: true,
             socket_options: socket_options,
             websocket_handshake_transform: addCustomAuthHeaders

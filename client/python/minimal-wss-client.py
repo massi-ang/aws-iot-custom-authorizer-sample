@@ -1,5 +1,8 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import argparse
-from awscrt import io, mqtt
+from awscrt import io, mqtt, auth, http
+from awsiot import mqtt_connection_builder
 import sys
 import threading
 import time
@@ -18,14 +21,12 @@ parser.add_argument('--endpoint', required=True, help="Your AWS IoT custom endpo
 parser.add_argument('--root-ca', help="File path to root certificate authority, in PEM format. " +
                                       "Necessary if MQTT server uses a certificate that's not already in " +
                                       "your trust store.")
-parser.add_argument('--client-id', default="test-" +
+parser.add_argument('--id', default="test-" +
                     str(uuid4()), help="Client ID for MQTT connection.")
-parser.add_argument('--username', default="",
-                    help="MQTT username.")
-parser.add_argument('--password', default="", help="MQTT password.")
-parser.add_argument('--token', help="A token to be passed to the MQTT authorizer instead of the password")
-parser.add_argument('--authorizer-name', help="The name of the custom authorizer in case is is not set as default")
-
+parser.add_argument('--token_name', default="token" , help="The Token key name set on the Custom Authorizer")
+parser.add_argument('--signature', default="", help="Token signature")
+parser.add_argument('--authorizer_name', default="TokenAuthorizer", help="The Custom Authorizer name")
+parser.add_argument('--token', default="", help="Token value")
 parser.add_argument('--topic', default="test/topic",
                     help="Topic to subscribe to, and publish messages to.")
 parser.add_argument('--message', default="Hello World!", help="Message to publish. " +
@@ -34,7 +35,6 @@ parser.add_argument('--count', default=10, type=int, help="Number of messages to
                                                           "Specify 0 to run forever.")
 parser.add_argument('--verbosity', choices=[x.name for x in io.LogLevel], default=io.LogLevel.NoLogs.name,
                     help='Logging level')
-            
 
 # Using globals to simplify sample code
 args = parser.parse_args()
@@ -82,6 +82,14 @@ def on_message_received(topic, payload, **kwargs):
     if received_count == args.count:
         received_all_event.set()
 
+def add_headers(transform_args):
+    transform_args.http_request.headers.add(
+        'x-amz-customauthorizer-name', args.authorizer_name)
+    transform_args.http_request.headers.add(
+        'x-amz-customauthorizer-signature', args.signature)
+    transform_args.http_request.headers.add(args.token_name, args.token)
+
+    transform_args.set_done()
 
 if __name__ == '__main__':
     # Spin up resources
@@ -90,32 +98,31 @@ if __name__ == '__main__':
     client_bootstrap = io.ClientBootstrap(event_loop_group, host_resolver)
 
     tls_options = io.TlsContextOptions()
-    tls_options.alpn_list = ['mqtt']
 
-    if args.root_ca:
+    socket_options = io.SocketOptions()
+
+    if args.root_ca: 
         tls_options.override_default_trust_store_from_path(ca_dirpath=None,
             ca_filepath=args.root_ca)
     tls_ctx = io.ClientTlsContext(options=tls_options)
+
     client = mqtt.Client(client_bootstrap, tls_ctx)
 
-    username = args.username
-    if args.authorizer_name:
-        username += f'?x-amz-customauthorizer-name={args.authorizer_name}'
-    if args.token:
-        username += f'&token={args.token}'
     mqtt_connection = mqtt.Connection(client=client,
         host_name=args.endpoint,
         port=443,
         on_connection_interrupted=on_connection_interrupted,
         on_connection_resumed=on_connection_resumed,
-        client_id=args.client_id,
+        client_id=args.id,
         clean_session=True,
         keep_alive_secs=6,
-        username=username,
-        password=args.password)
+        socket_options=socket_options,
+        use_websockets=True,
+        websocket_handshake_transform=add_headers
+        )
 
     print("Connecting to {} with client ID '{}'...".format(
-        args.endpoint, args.client_id))
+        args.endpoint, args.id))
 
     connect_future = mqtt_connection.connect()
 
