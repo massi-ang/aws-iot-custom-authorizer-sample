@@ -68,7 +68,9 @@ function buildPolicy (token, authenticated) {
                         {
                             "Action": "iot:Connect",
                             "Effect": "Allow",
-                            "Resource": "*" // Should also restrict the client id to match a thing name
+                            "Resource": [
+                                '*'
+                            ]
                         },
                         {
                             "Action": "iot:Subscribe",

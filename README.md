@@ -230,7 +230,7 @@ For this test we provide a Python client using the Python AWS Crt libraries.
 
 ```
 pip install -r requirements.txt
-python --endpoint <endpoint> --username aladdin --password opensesame --topic test/mqtt
+python client/python/minimal-mqtt-client.py --username aladdin --password opensesame --topic d/aladdin --endpoint <endpoint>
 ```
 
 Where
@@ -306,7 +306,8 @@ To test it, execute the client with the following options:
 ```bash
 endpoint=$(aws iot describe-endpoint --type data:iot-ats)
 python client/python/minimal-mqtt-client.py --endpoint $endpoint \
-  --topic test/mqt --token allow --authorizer-name MqttTokenAuthorizer --username admin --password dummy
+  --topic d/aladdin --token allow --authorizer-name MqttTokenAuthorizer \
+  --username aladdin --password dummy
 ```
 
 You can also test the MQTT/TLS connection with the `raw-pub-sub` sample client available in the [Java](https://github.com/aws/aws-iot-device-sdk-java-v2) 
