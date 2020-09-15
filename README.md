@@ -312,3 +312,38 @@ python client/python/minimal-mqtt-client.py --endpoint $endpoint \
 
 You can also test the MQTT/TLS connection with the `raw-pub-sub` sample client available in the [Java](https://github.com/aws/aws-iot-device-sdk-java-v2) 
 and [CPP](https://github.com/aws/aws-iot-device-sdk-cpp-v2) SDKs.
+
+## Using the embedded C SDK
+
+To test the MQTT/TLS custom authorizer with the [embedded C SDK](https://github.com/aws/aws-iot-device-sdk-embedded-C), you can use the `demos/mqtt/mqtt_demo_mutual_auth`.
+
+```
+git clone https://github.com/aws/aws-iot-device-sdk-embedded-C
+```
+
+Open the `demos/mqtt/mqtt_demo_mutual_auth\demo_config.h` include file and specify values for:
+* CLIENT_PRIVATE_KEY_PATH
+* CLIENT_USERNAME
+* CLIENT_PASSWORD
+
+Open the `demos/mqtt/mqtt_demo_mutual_auth\demo_config.h` and change the value for:
+* MQTT_EXAMPLE_TOPIC
+
+to `d/<username>` or whatever you have setup the policy returned by the custom authorizer to return.
+
+Once done, in the terminal you would do:
+
+```
+mkdir build
+cd build
+cmake ..
+make mqtt_demo_mutual_auth
+bin/mqtt_demo_mutual_auth
+```
+
+
+
+
+
+
+
