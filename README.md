@@ -341,7 +341,15 @@ make mqtt_demo_mutual_auth
 bin/mqtt_demo_mutual_auth
 ```
 
+## Using Custom Domains
 
+When using Custom Domains you need to configure the authorizer on the domain using the following API https://docs.aws.amazon.com/iot/latest/apireference/API_UpdateDomainConfiguration.html
+
+
+```
+aws iot update-domain-configuration --domain-configuration-name <DOMAIN_CONF_NAME> \
+     --authorizer-config defaultAuthorizerName=<AUTHORIZER_NAME>
+``` 
 
 
 
