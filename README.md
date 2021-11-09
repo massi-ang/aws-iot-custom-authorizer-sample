@@ -44,15 +44,24 @@ You can change the default values for the username, password and token for the M
 ```
 cdk deploy --parameters username=admin --parameters password=admin --parameters token=XXX
 ```
-## WebSocket Custom Authorizer for JSON Web Tokens
+## WebSocket Custom Authorizer for JSON Web Tokens (JWT)
 
 The custom authorizer can validate that the token that is provided is signed with a known key. This prevents malicious users to trigger you custom authorizer lambda function as AWS IoT Core will deny access if the token and the token signature do not match.
 
-The token signature is generated using an RSA key. The private key is used by the client to sign the authorization token while the the public key will be associated with the custom authorizer.
+The custom authorizer uses the RSA256 algorithm for the token signature. This is also one of the algorithms that can be used to sign JWT tokens [RFC 7518](https://tools.ietf.org/html/rfc7518#section-3), which means we can use the JWT signature as signature to pass to the authorizer. In this way, AWS IoT Core takes care of validating the signature allowing the Customer Authorizer to trust the JWT.
 
-This signature algorithm is equivalent to the RSA256 algorithm adopted by the JWT token [RFC 7518](https://tools.ietf.org/html/rfc7518#section-3), which means we can use the JWT signature as signature to pass to the authorizer. In this way, AWS IoT Core takes care of validating the signature allowing the Customer Authorizer to trust the JWT.
+If you want to use JWT tokens provided by 3rd parties IdP, first verify that the signing algorithm used is RSA256. 
+Then, you need to get the public key from the provider that will be used as the public verification key by the custom authorizer. If the provider is OIDC compliant, you can obtain the public key from the jwks endpoint. (For an extensive walk through you can refer to [Navigating RS256 and JWKS](https://auth0.com/blog/navigating-rs256-and-jwks/))
 
-### Create the signing key pair
+1. `GET /.well-known/openid-configuration` from the provider endpoint (https://openid.net/specs/openid-connect-discovery-1_0-21.html#ProviderConfigurationRequest)
+1. Extract the `"jwks_uri"` value from the response
+1. `GET <jwks_uri>` to get the JSON Web Key Set (https://auth0.com/docs/security/tokens/json-web-tokens/json-web-key-set-properties)
+1. Derive the public key
+
+You can use [jwks-rsa](https://www.npmjs.com/package/jwks-rsa) library to get the public key.
+
+
+## Create the signing key pair
 
 To create the key pair follow these steps:
 
