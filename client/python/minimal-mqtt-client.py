@@ -41,6 +41,8 @@ parser.add_argument('--password', default="", help="MQTT password.")
 parser.add_argument('--token', help="A token to be passed to the MQTT authorizer instead of the password")
 parser.add_argument(
     '--token_name', help="The token key name set on the custom authorizer")
+parser.add_argument(
+    '--signature', help="The token signature")
 parser.add_argument('--authorizer-name', help="The name of the custom authorizer in case is is not set as default")
 
 parser.add_argument('--topic', default="test/topic",
@@ -120,6 +122,8 @@ if __name__ == '__main__':
         username += f'?x-amz-customauthorizer-name={args.authorizer_name}'
     if args.token:
         username += f'&{args.token_name}={args.token}'
+    if args.signature:
+        username += f'&x-amz-customauthorizer-signature={args.signature}'
     mqtt_connection = mqtt.Connection(client=client,
         host_name=args.endpoint,
         port=443,

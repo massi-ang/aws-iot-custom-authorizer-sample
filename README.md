@@ -322,6 +322,20 @@ python client/python/minimal-mqtt-client.py --endpoint $endpoint \
 You can also test the MQTT/TLS connection with the `raw-pub-sub` sample client available in the [Java](https://github.com/aws/aws-iot-device-sdk-java-v2) 
 and [CPP](https://github.com/aws/aws-iot-device-sdk-cpp-v2) SDKs.
 
+With those samples you need to pass the `token` and the `authorizer name` as username. The password can be any string. The value for the username would then be:
+
+`aladdin?x-amz-customauthorizer-name=MqttTokenAuthorizer&token=allow`
+
+## Enable signing
+
+If you enable signing for the authorizer you need to generate the token signature using the RSA256 algorithm and pass it as part of the username.
+
+For example the full username would be similar to:
+
+`aladdin?x-amz-customauthorizer-name=MqttTokenAuthorizer&token=allow&x-amz-customauthorizer-signature=signature`
+
+Where `signature` is the computed signature.
+
 ## Using the embedded C SDK
 
 To test the MQTT/TLS custom authorizer with the [embedded C SDK](https://github.com/aws/aws-iot-device-sdk-embedded-C), you can use the `demos/mqtt/mqtt_demo_mutual_auth`.
