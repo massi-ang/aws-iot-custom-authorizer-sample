@@ -23,7 +23,7 @@
   "dependencies": {
     "@aws-cdk/aws-lambda": "1.131.0",
     "@aws-cdk/core": "1.131.0",
-    "aws-iot-device-sdk-v2": "^1.3.6",
+    "aws-iot-device-sdk-v2": "^1.6.0",
     "source-map-support": "^0.5.16"
   }
 }
