@@ -8,15 +8,17 @@ const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const yargs = require('yargs')
 const { exit } = require('process')
+const { string } = require("yargs")
 
 const argv = yargs.options({
     endpoint: { type: 'string' },
     id: { type: 'string' },
     verbose: { type: 'boolean', default: false },
-    key_path: { type: 'string' },
+    token: {type: 'string'},
+    token_signature: {type: 'string'},
     authorizer: { type: 'string', default: 'TokenAuthorizer' },
     ca_path: { type: 'string', default: 'AmazonRootCA1.pem' },
-}).demand(['endpoint', 'id', 'key_path']).help().argv
+}).demand(['endpoint', 'id', 'token']).help().argv
 
 options={
     ca: fs.readFileSync(argv.ca_path),
@@ -25,8 +27,20 @@ options={
 
 token = argv.token
 
+query_obj = {
+    "token": token
+}
+
+if (argv.token_signature !== null) {
+    query_obj["x-amz-customauthorizer-signature"] = argv.token_signature
+}
+
+if (argv.authorizer !== null) {
+    query_obj["x-amz-customauthorizer-name"] = argv.authorizer
+}
+
 console.log(`Connecting to ${argv.endpoint} with client id ${id} using ${argv.authorizer} authorizer`)
-query = qs.stringify({"x-amz-customauthorizer-name":argv.authorizer, "token":token})
+query = qs.stringify(query_obj)
 var client = mqtt.connect(`wss://${argv.endpoint}:443/mqtt?`+query, options);
 
 client.on('connect', function () {
