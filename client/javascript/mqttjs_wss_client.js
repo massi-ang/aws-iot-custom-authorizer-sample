@@ -45,7 +45,10 @@ var client = mqtt.connect(`wss://${argv.endpoint}:443/mqtt?`+query, options);
 
 client.on('connect', function () {
     console.log('Connected')
-    client.subscribe('presence');
+    client.subscribe(`d/${id}`);
+    setInterval( ()=> {
+        client.publish(`d/${id}`, JSON.stringify({'m':'Hello from mqtt.js client'}));
+    }, 5000)
 });
 
 client.on('error', function (err) {
@@ -59,7 +62,7 @@ client.on('close', function (err) {
 
 client.on('message', function (topic, message) {
     // message is Buffer
-    console.log(message.toString());
-    client.publish('presence', JSON.stringify({'m':'Hello from mqtt.js client'}));
-    client.end();
+    console.log(`topic: ${topic}, message: ${message.toString()}`);
+    
 });
+
