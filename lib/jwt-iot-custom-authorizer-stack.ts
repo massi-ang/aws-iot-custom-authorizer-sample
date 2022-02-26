@@ -14,12 +14,12 @@
 
 
 
-import * as cdk from '@aws-cdk/core';
-import * as lambda from '@aws-cdk/aws-lambda'
-
+import * as cdk from 'aws-cdk-lib';
+import { aws_lambda as lambda,  } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 export class JwtIotCustomAuthorizerStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     let username = new cdk.CfnParameter(this, 'username', {
