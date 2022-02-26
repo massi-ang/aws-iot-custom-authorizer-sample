@@ -1,0 +1,79 @@
+<!--
+ Copyright 2022 Amazon.com.
+ SPDX-License-Identifier: MIT
+-->
+
+<html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.6/mqtt.min.js" integrity="sha512-2MN7gINkJdJXHXTbcknkp+gWZhKID0cQganN6MKM4lpNLJ1/RgGiO/v6XousWn9kkLCBb/ix4ZaArooXJ2/bvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <body>
+        <form>
+            <label for="endpoint">Endpoint</label>
+            <input type="text" id="endpoint" value="xxxxxx-ats.iot.eu-west-1.amazonaws.com"><p></p>
+            <p><label for="token">Token</label>
+            <input type="text" id="token" value="base64 jwt">&nbsp;Use <a href="jwt.io">jwt.io</a> to get one. Include id as a field</p>
+            <label for="authorizer">Authorizer</label>
+            <input type="text" id="authorizer" value="TokenAuthorizer_H"><p></p>
+            <label for="id">Id</label>
+            <input type="text" id="id" value="mqtt_client"><br>
+        </form>
+        <button onclick="connect()">Connect</button><p></p>
+        <p><span id="status"><bold>Disconnected</bold></span></p>
+        <label for="subscribe_topic">Subscribe topic</label>
+        <input type="text" id="subscribe_topic" value="presence">
+        <button onclick="subscribe()">Subscribe</button>
+        <button onclick="unsubscribe()">Unsubscribe</button><p></p>
+        <label for="topic">Topic</label>
+        <input type="text" id="topic" value="presence">
+        <label for="message">Message</label>
+        <input type="text" id="message" value="Hello">
+        <button onclick="publish()">Publish</button>
+        <script>
+            //const mqtt = require("mqtt")
+            //const qs = require("querystring")
+            let client=null
+            function connect() {
+                endpoint=document.getElementById("endpoint").value
+                token=document.getElementById("token").value
+                authorizer=document.getElementById("authorizer").value
+                id=document.getElementById("id").value
+                console.log(`Connecting to ${endpoint} with client id ${id} using ${authorizer} authorizer`)
+                query = `x-amz-customauthorizer-name=${authorizer}&token=${token}`
+                client = mqtt.connect(`wss://${endpoint}:443/mqtt?`+query, {});
+
+                client.on('connect', function () {
+                    console.log('Connected')
+                    document.getElementById("status").textContent="Connected!!"
+                });
+
+                client.on('error', function (err) {
+                    console.log(err);
+                });
+
+                client.on('close', function (err) {
+                    console.log('close',err);
+                    client = null
+                });
+
+                client.on('message', function (topic, message) {
+                    // message is Buffer
+                    console.log(`Got ${message.toString()} on topic: "${topic}"`);
+                });    
+            }
+            function subscribe() {
+                topic = document.getElementById("subscribe_topic").value
+                client.subscribe(topic)
+            }
+           
+            function unsubscribe() {
+                topic = document.getElementById("subscribe_topic").value
+                client.unsubscribe(topic)
+            }
+
+            function publish() {
+                topic = document.getElementById("topic").value
+                message = endpoint=document.getElementById("message").value
+                client.publish(topic, message)
+            }
+        </script>
+    </body>
+</html>

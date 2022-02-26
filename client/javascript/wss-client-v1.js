@@ -47,6 +47,7 @@ s = parts[2].replace(/_/gi, '/').replace(/-/gi, '+') + '==' // Make the signatur
 
 if (argv.verbose) {
     console.log('-'.repeat(10))
+    console.debug(`Token: ${JSON.stringify(token)}`)
     console.debug(`Token: ${t}`)
     console.debug(`Signature: ${s}`)
     console.log('-'.repeat(10))
@@ -58,9 +59,10 @@ const d = device({
     clientId: argv.id,
     customAuthHeaders: {
         'X-Amz-CustomAuthorizer-Name': argv.authorizer,
-        'X-Amz-CustomAuthorizer-Signature': s,
+       // 'X-Amz-CustomAuthorizer-Signature': s,
         'token': t
-    }
+    }, 
+    //customAuthQueryString: `?x-amz-customauthorizer-name=${argv.authorizer}&x-amz-customauthorizer-signature=${s}&token=${t}`
 })
 
 
@@ -74,6 +76,10 @@ d.on('connect', () => {
     }, 5000)
 })
 
+d.on('close', (err) => {
+    console.log('closed', err)
+    process.exit()
+})
 
 d.on('disconnect', (err) => {
     console.log('disconnected', err)

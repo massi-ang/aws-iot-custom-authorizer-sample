@@ -22,6 +22,8 @@ For the client:
 The custom authorizer logic is deployed via the CDK.
 You can examine the definition of the resources that are going to be created in the `lib/jwt-iot-custom-authorizer-stack.ts` file.
 
+The authorizer logic in in teh lambda functions in the lambda folder. There are 2 authorizers, one for websocket connections and one for mqtt.
+
 Run the following commands to download all the project dependencies and compile the stack:
 
 ```
@@ -46,9 +48,9 @@ cdk deploy --parameters username=admin --parameters password=admin --parameters 
 ```
 ## WebSocket Custom Authorizer for JSON Web Tokens (JWT)
 
-The custom authorizer can validate that the token that is provided is signed with a known key. This prevents malicious users to trigger you custom authorizer lambda function as AWS IoT Core will deny access if the token and the token signature do not match.
+If signature verification is enable on the custom authorizer, AWS IoT validates that the token that is provided is signed with a known key. This prevents malicious users to trigger you custom authorizer lambda function as AWS IoT Core will deny access if the token and the token signature do not match.
 
-The custom authorizer uses the RSA256 algorithm for the token signature. This is also one of the algorithms that can be used to sign JWT tokens [RFC 7518](https://tools.ietf.org/html/rfc7518#section-3), which means we can use the JWT signature as signature to pass to the authorizer. In this way, AWS IoT Core takes care of validating the signature allowing the Customer Authorizer to trust the JWT.
+AWS IoT Core uses the RSA256 algorithm for the token signature. This is also one of the algorithms that can be used to sign JWT tokens [RFC 7518](https://tools.ietf.org/html/rfc7518#section-3), which means we can use the JWT signature as signature to pass to the authorizer. In this way, AWS IoT Core takes care of validating the signature allowing the Customer Authorizer to trust the JWT.
 
 If you want to use JWT tokens provided by 3rd parties IdP, first verify that the signing algorithm used is RSA256. 
 Then, you need to get the public key from the provider that will be used as the public verification key by the custom authorizer. If the provider is OIDC compliant, you can obtain the public key from the jwks endpoint. (For an extensive walk through you can refer to [Navigating RS256 and JWKS](https://auth0.com/blog/navigating-rs256-and-jwks/))
@@ -61,7 +63,7 @@ Then, you need to get the public key from the provider that will be used as the 
 You can use [jwks-rsa](https://www.npmjs.com/package/jwks-rsa) library to get the public key.
 
 
-## Create the signing key pair
+## Create a custom signing key pair 
 
 To create the key pair follow these steps:
 
@@ -72,11 +74,10 @@ openssl rsa -in myPrivateKey.pem -pubout > mykey.pub
 
 The file `mykey.pub` will contain the public key in PEM format that you will need to configure for the authorizer in the next step.
 
-##  Custom authorizer configuration MQTT/WSS
+##  Custom authorizer configuration for WSS connections
 
 In this step we are going to configure the custom authorizer in AWS IoT Core. You can find more information about custom authorizers in the [documentation](https://docs.aws.amazon.com/iot/latest/developerguide/custom-authorizer.html).
 
-### CLI
 
 We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda function has been created in the previous step. You can examine the code in `lambda/iot-custom-auth/lambda.js`.
 
@@ -94,9 +95,9 @@ resp=$(aws iot create-authorizer \
 auth_arn=$(echo $resp | jq -r .authorizerArn -)
 ```
 
-Note: you can also use the AWS Console to create the Custom Authorizer.
+Note: you can also use the AWS Console to create the Custom Authorizer, which makes it simpler to add the public key in the correct format.
 
-Take note of the arn of the token authorizer. We need it to give the iot service the permission to invoke this lambda function on when a new connection request is made.
+Take note of the arn of the token authorizer. We need it to give the AWS IoT service the permission to invoke this AWS Lambda function on when a new connection request is made.
 
 ```bash
 aws lambda add-permission \
@@ -117,7 +118,7 @@ For python the client is in `client/python/minimal-wss-client.py`.
 
 
 ```
-node client/javascript/wss-client-v1.js --key_path <key path> --endpoint <endpoint> --id <id> [--verbose] [--authorizer_name] [--token_name]
+node client/javascript/wss-client-v1.js --key_path <key path> --endpoint <endpoint> --id <id> [--verbose] [--authorizer_name] [--key_path]
 ```
 
 ```
@@ -194,7 +195,7 @@ The token and its signature should therefore be generated in the backend, and po
 
 Rotations of the token can be implemented via the MQTT protocol, and the only issue to solve would be how to obtain the initial token to the device. This could be done via an external API, a companion app, a registration step, etc. and is out of the scope of this demo.
 
-##  MQTT Custom authorizer configuration
+# MQTT Custom authorizer configuration
 
 In this second example we are going to setup a new custom authorizer to perform username and password authentication for MQTT/TLS connections.
 
@@ -204,7 +205,7 @@ In this second example we are going to setup a new custom authorizer to perform 
 cdk deploy --parameters username=<value> --parameters password=<value> --parameters token=<value>      
 ```
 
-### CLI
+## Configure the authorizer
 
 We first create the authorizer, giving it a name and associating it with the lambda function that performs the authorization. This lambda function has been created by the CDK stack you have deployed. You can examine the code in `lambda/iot-mqtt-custom-auth/lambda.js`.
 
