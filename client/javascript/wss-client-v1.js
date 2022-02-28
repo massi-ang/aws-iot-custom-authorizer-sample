@@ -59,10 +59,9 @@ const d = device({
     clientId: argv.id,
     customAuthHeaders: {
         'X-Amz-CustomAuthorizer-Name': argv.authorizer,
-       // 'X-Amz-CustomAuthorizer-Signature': s,
+        'X-Amz-CustomAuthorizer-Signature': s,
         'token': t
     }, 
-    //customAuthQueryString: `?x-amz-customauthorizer-name=${argv.authorizer}&x-amz-customauthorizer-signature=${s}&token=${t}`
 })
 
 

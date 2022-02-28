@@ -11,6 +11,8 @@
             <input type="text" id="endpoint" value="xxxxxx-ats.iot.eu-west-1.amazonaws.com"><p></p>
             <p><label for="token">Token</label>
             <input type="text" id="token" value="base64 jwt">&nbsp;Use <a href="jwt.io">jwt.io</a> to get one. Include id as a field</p>
+            <label for="Signature">Signature</label>
+            <input type="text" id="signature" value="">
             <label for="authorizer">Authorizer</label>
             <input type="text" id="authorizer" value="TokenAuthorizer_H"><p></p>
             <label for="id">Id</label>
@@ -35,9 +37,13 @@
                 endpoint=document.getElementById("endpoint").value
                 token=document.getElementById("token").value
                 authorizer=document.getElementById("authorizer").value
+                signature=encodeURIComponent(document.getElementById("signature").value)
                 id=document.getElementById("id").value
                 console.log(`Connecting to ${endpoint} with client id ${id} using ${authorizer} authorizer`)
                 query = `x-amz-customauthorizer-name=${authorizer}&token=${token}`
+                if (signature.length>0) {
+                    query += `&x-amz-customauthorizer-signature=${signature}`
+                }
                 client = mqtt.connect(`wss://${endpoint}:443/mqtt?`+query, {});
 
                 client.on('connect', function () {
@@ -51,7 +57,6 @@
 
                 client.on('close', function (err) {
                     console.log('close',err);
-                    client = null
                 });
 
                 client.on('message', function (topic, message) {

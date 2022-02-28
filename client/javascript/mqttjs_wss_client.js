@@ -38,7 +38,7 @@ if (argv.token_signature !== null) {
 if (argv.authorizer !== null) {
     query_obj["x-amz-customauthorizer-name"] = argv.authorizer
 }
-
+id = argv.id
 console.log(`Connecting to ${argv.endpoint} with client id ${id} using ${argv.authorizer} authorizer`)
 query = qs.stringify(query_obj)
 var client = mqtt.connect(`wss://${argv.endpoint}:443/mqtt?`+query, options);
