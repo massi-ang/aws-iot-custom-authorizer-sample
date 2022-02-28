@@ -150,13 +150,13 @@ where:
 * **authorizer_name** in case you need to specify another authorizer than TokenAuthorizer.
 * **token_name** in case you need to specify another token key name than token.
 
-For the python client you need also to pass also the token and signature values as the client does not generate them.
-
-You can obtain the values by running 
+For the python client and the browser client you need to pass the token and signature values, which can be obtained as follow:
 
 ```
 node client/javascript/token-gen.js --id <id> --key_path <path to private key>
 ``` 
+
+### How permissions are generated
 
 The JWT token used for this demo has the following format:
 
@@ -167,6 +167,7 @@ The JWT token used for this demo has the following format:
 }
 ```
 
+The lambda function authorizer receives a validated token. It then checks the exp field to see if the token has not expired.
 The lambda function authorizer uses the `sub` field in the token to scope down the policy for the connection  allowing the client to publish and subscribe to the topic `d/<sub>` and to its own IoT Shadow (`$aws/things/<sub>/shadow/*`).
 
 The test client publishes a message to the topic `d/<sub>` every 5 sec. 
@@ -212,6 +213,31 @@ In this example the client is responsible of signing the token which is obviousl
 The token and its signature should therefore be generated in the backend, and possibly also encrypted. 
 
 Rotations of the token can be implemented via the MQTT protocol, and the only issue to solve would be how to obtain the initial token to the device. This could be done via an external API, a companion app, a registration step, etc. and is out of the scope of this demo.
+
+### Testing without signature verification
+
+In case you encounter issues in connecting the client with AWS IoT Core, you can try configuring the authorizer without token signing.
+
+```bash
+resp=$(aws iot create-authorizer \
+  --authorizer-name "TokenAuthorizer_NoSign" \
+  --authorizer-function-arn $arn \
+  --status ACTIVE \
+  --token-key-name token \
+  --signing-disabled")
+auth_arn=$(echo $resp | jq -r .authorizerArn -)
+```
+
+And then add the lambda permissions:
+
+```bash
+aws lambda add-permission \
+  --function-name  $arn \
+  --principal iot.amazonaws.com \
+  --statement-id Id-12367 \
+  --action "lambda:InvokeFunction" \
+  --source-arn $auth_arn
+```
 
 # MQTT Custom authorizer configuration
 
