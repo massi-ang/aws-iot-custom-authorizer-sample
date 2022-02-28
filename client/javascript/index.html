@@ -8,30 +8,28 @@
     <body>
         <form>
             <label for="endpoint">Endpoint</label>
-            <input type="text" id="endpoint" value="xxxxxx-ats.iot.eu-west-1.amazonaws.com"><p></p>
+            <p><input type="text" id="endpoint" value="xxxxxx-ats.iot.eu-west-1.amazonaws.com"/></p>
             <p><label for="token">Token</label>
-            <input type="text" id="token" value="base64 jwt">&nbsp;Use <a href="jwt.io">jwt.io</a> to get one. Include id as a field</p>
+            <input type="text" id="token" value="base64_jwt"></p>
             <label for="Signature">Signature</label>
-            <input type="text" id="signature" value="">
+            <input type="text" id="signature" value=""/>
             <label for="authorizer">Authorizer</label>
-            <input type="text" id="authorizer" value="TokenAuthorizer_H"><p></p>
+            <p><input type="text" id="authorizer" value="TokenAuthorizer"/></p>
             <label for="id">Id</label>
-            <input type="text" id="id" value="mqtt_client"><br>
+            <input type="text" id="id" value="mqtt_client"/><br>
         </form>
-        <button onclick="connect()">Connect</button><p></p>
+        <p><button onclick="connect()">Connect</button></p>
         <p><span id="status"><bold>Disconnected</bold></span></p>
         <label for="subscribe_topic">Subscribe topic</label>
         <input type="text" id="subscribe_topic" value="presence">
         <button onclick="subscribe()">Subscribe</button>
-        <button onclick="unsubscribe()">Unsubscribe</button><p></p>
+        <p><button onclick="unsubscribe()">Unsubscribe</button></p>
         <label for="topic">Topic</label>
         <input type="text" id="topic" value="presence">
         <label for="message">Message</label>
         <input type="text" id="message" value="Hello">
         <button onclick="publish()">Publish</button>
         <script>
-            //const mqtt = require("mqtt")
-            //const qs = require("querystring")
             let client=null
             function connect() {
                 endpoint=document.getElementById("endpoint").value
