@@ -34,7 +34,10 @@ jwtToken = jwt.sign(token, key, { algorithm: 'RS256' })
 parts = jwtToken.split('.')
 
 t = parts[0] + '.' + parts[1]
-s = parts[2].replace(/_/gi, '/').replace(/-/gi, '+') + '==' // Make the signature compliant
+// Make the signature compliant
+// JSW are encoded using Base64URL schema which replaces / for _ and + with - in order to avoid % encoding those values
+// The signature passed to the custom authorizers uses a pure Base64 encoding, hence the following is necessary
+s = parts[2].replace(/_/gi, '/').replace(/-/gi, '+') + '==' 
 
 // The signature can also be calculated using the crypto library for any arbitraty token and not onlu JWT
 //
