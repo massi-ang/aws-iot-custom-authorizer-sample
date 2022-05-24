@@ -21,7 +21,7 @@
     "typescript": "^3.8.0"
   },
   "dependencies": {
-    "aws-iot-device-sdk-v2": "^1.6.0",
+    "aws-iot-device-sdk-v2": "^1.8.1",
     "constructs": "^10.0.73",
     "source-map-support": "^0.5.16"
   }
