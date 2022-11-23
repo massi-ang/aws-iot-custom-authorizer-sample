@@ -30,6 +30,8 @@ exports.handler = async function (event, context) {
         }
         if (username === process.env['USERNAME'] && password === process.env['PASSWORD']) {
             return buildPolicy(username, true)
+        } else {
+            return buildPolicy(username, false)
         }
     } 
     if (event.token !== undefined && event.token == process.env['TOKEN']) {
