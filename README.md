@@ -284,7 +284,7 @@ For this test we provide a Python client using the Python AWS CRT libraries.
 
 ```
 pip install -r requirements.txt
-python client/python/minimal-mqtt-client.py --username aladdin --password opensesame --topic d/aladdin --endpoint <endpoint>
+python client/python/minimal-mqtt-client.py --username aladdin --password opensesame --topic d/aladdin --endpoint <endpoint> --authorizer-name MqttAuthorizer
 ```
 
 Where
@@ -322,7 +322,7 @@ mqtt_connection = mqtt.Connection(client=client,
 
 ```
 
-You need to provide an authorizer name that will be appended to the `username` unless you have configured the authorizer as the default one for the account using the following command:
+For better compatibility with legacy clients, you might want to configure the authorizer as the default one for the account using the following command in order to avoid appending the custom authorizer name to the username:
 
 ```
 aws iot set-default-authorizer --authorizer-name MqttAuthorizer
@@ -367,7 +367,7 @@ python client/python/minimal-mqtt-client.py --endpoint $endpoint \
 You can also test the MQTT/TLS connection with the `raw-pub-sub` sample client available in the [Java](https://github.com/aws/aws-iot-device-sdk-java-v2) 
 and [CPP](https://github.com/aws/aws-iot-device-sdk-cpp-v2) SDKs.
 
-With those samples you need to pass the `token` and the `authorizer name` as username. The password can be any string. The value for the username would then be:
+With those samples you need to pass the `token` and the `authorizer name` as part of the username. The password can be any string. The value for the username would then be:
 
 `aladdin?x-amz-customauthorizer-name=MqttTokenAuthorizer&token=allow`
 
