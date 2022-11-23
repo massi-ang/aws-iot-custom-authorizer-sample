@@ -20,7 +20,7 @@ exports.handler = async function (event, context) {
     }
 
     if (token === undefined || token === null) {
-        console.debug('Trying to get the token from the payload')
+        console.debug('Trying to get the token from the event payload')
         token = event.token
     }
     if (token === undefined || token == null) {
