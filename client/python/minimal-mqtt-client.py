@@ -1,16 +1,5 @@
-# Copyright 2020 angmas
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright 2022 Massimiliano Angelino
+# SPDX-License-Identifier: MIT-0
 
 
 import argparse
@@ -40,7 +29,7 @@ parser.add_argument('--username', default="",
 parser.add_argument('--password', default="", help="MQTT password.")
 parser.add_argument('--token', help="A token to be passed to the MQTT authorizer instead of the password")
 parser.add_argument(
-    '--token_name', help="The token key name set on the custom authorizer")
+    '--token_name', help="The token key name set on the custom authorizer", default="token")
 parser.add_argument(
     '--signature', help="The token signature")
 parser.add_argument('--authorizer-name', help="The name of the custom authorizer in case is is not set as default")

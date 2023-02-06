@@ -1,12 +1,5 @@
-/* 
- *  This is the default license template.
- *  
- *  File: wss-client-v1.js
- *  Author: angmas
- *  Copyright (c) 2020 angmas
- *  
- *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
- */
+// Copyright 2022 Massimiliano Angelino
+// SPDX-License-Identifier: MIT-0
 
 const device = require('aws-iot-device-sdk').device
 const crypto = require('crypto')
@@ -15,38 +8,29 @@ const jwt = require('jsonwebtoken')
 const yargs = require('yargs')
 const { exit } = require('process')
 
-const argv = yargs.options({
+const argv = yargs(process.argv).options({
     endpoint: { type: 'string' },
     id: { type: 'string' },
     verbose: { type: 'boolean', default: false },
     key_path: { type: 'string' },
     authorizer: { type: 'string', default: 'TokenAuthorizer' }
-}).demand(['endpoint', 'id', 'key_path']).help().argv
+}).demandOption(['endpoint', 'id', 'key_path']).help().argv
 
-key = fs.readFileSync(argv.key_path) // PEM private key
+const key = fs.readFileSync(argv.key_path) // PEM private key
 
 console.log(`Connecting to ${argv.endpoint} with id=${argv.id}`)
 
-token = { sub: argv.id, exp: Math.floor(Date.now() / 1000) + 60 * 60 }
+const token = { sub: argv.id, exp: Math.floor(Date.now() / 1000) + 60 * 60 }
 
-jwtToken = jwt.sign(token, key, { algorithm: 'RS256' })
+const jwtToken = jwt.sign(token, key, { algorithm: 'RS256' })
 
-parts = jwtToken.split('.')
+const parts = jwtToken.split('.')
 
-t = parts[0] + '.' + parts[1]
+const t = parts[0] + '.' + parts[1]
 // Make the signature compliant
 // JSW are encoded using Base64URL schema which replaces / for _ and + with - in order to avoid % encoding those values
 // The signature passed to the custom authorizers uses a pure Base64 encoding, hence the following is necessary
-s = parts[2].replace(/_/gi, '/').replace(/-/gi, '+') + '==' 
-
-// The signature can also be calculated using the crypto library for any arbitraty token and not onlu JWT
-//
-
-// k = crypto.createPrivateKey(key)
-// sign = crypto.createSign('SHA256')
-// sign.write(t)
-// sign.end()
-// s = sign.sign(k, 'base64')
+const s = parts[2].replace(/_/gi, '/').replace(/-/gi, '+') + '==' 
 
 if (argv.verbose) {
     console.log('-'.repeat(10))

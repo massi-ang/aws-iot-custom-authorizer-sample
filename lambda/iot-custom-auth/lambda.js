@@ -1,24 +1,15 @@
-/* 
- *  This is the default license template.
- *  
- *  File: lambda.js
- *  Author: angmas
- *  Copyright (c) 2020 angmas
- *  
- *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
- */
-
 'use strict'
 
 exports.handler = async function (event, context) {
     console.debug(event)
-    var token = undefined
+    let token = undefined
+    // Check for token in queryString
     if (event.protocolData !== undefined) {
         const queryString = event.protocolData.http.queryString
         const params = new URLSearchParams(queryString);
         token = params.get("token")
     }
-
+    // Check for token in the payload
     if (token === undefined || token === null) {
         console.debug('Trying to get the token from the event payload')
         token = event.token
@@ -28,13 +19,14 @@ exports.handler = async function (event, context) {
         return buildPolicy(null, false)
     }
     console.debug(`token : ${token}`)
-    var tokenParts = token.split('.')
+    // Split the JWT token 
+    let tokenParts = token.split('.')
     if (tokenParts.length !== 2) {
         return buildPolicy(null, false)
     }
-    var jwtBuffer = new Buffer.from(tokenParts[1], 'base64')
+    let jwtBuffer = new Buffer.from(tokenParts[1], 'base64')
     try {
-        var jwtToken = JSON.parse(jwtBuffer.toString())
+        let jwtToken = JSON.parse(jwtBuffer.toString())
 
         if (!jwtToken.exp || Math.floor(jwtToken.exp/1000) > Date.now() ) {
             console.warn('Expired token')

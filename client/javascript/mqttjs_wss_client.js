@@ -1,5 +1,5 @@
-// Copyright 2022 Amazon.com.
-// SPDX-License-Identifier: MIT
+// Copyright 2022 Massimiliano Angelino
+// SPDX-License-Identifier: MIT-0
 
 const mqtt = require("mqtt")
 const qs = require("querystring")
@@ -18,17 +18,15 @@ const argv = yargs.options({
     token_signature: {type: 'string'},
     authorizer: { type: 'string', default: 'TokenAuthorizer' },
     ca_path: { type: 'string', default: 'AmazonRootCA1.pem' },
-}).demand(['endpoint', 'id', 'token']).help().argv
+}).demandOption(['endpoint', 'id', 'token']).help().argv
 
-options={
+const options = {
     ca: fs.readFileSync(argv.ca_path),
     clientId: argv.id,
 }
 
-token = argv.token
-
-query_obj = {
-    "token": token
+const query_obj = {
+    "token": argv.token
 }
 
 if (argv.token_signature !== null) {
@@ -38,16 +36,19 @@ if (argv.token_signature !== null) {
 if (argv.authorizer !== null) {
     query_obj["x-amz-customauthorizer-name"] = argv.authorizer
 }
-id = argv.id
-console.log(`Connecting to ${argv.endpoint} with client id ${id} using ${argv.authorizer} authorizer`)
-query = qs.stringify(query_obj)
-var client = mqtt.connect(`wss://${argv.endpoint}:443/mqtt?`+query, options);
+
+console.log(`Connecting to ${argv.endpoint} with client id ${argv.id} using ${argv.authorizer} authorizer`)
+const query = qs.stringify(query_obj)
+const client = mqtt.connect(`wss://${argv.endpoint}:443/mqtt?`+query, options);
+
+// The policy returned by the authorizer needs to allow iot:Publish, iot:Subscribe and iot:Receive
+// on topic d/<id>
 
 client.on('connect', function () {
     console.log('Connected')
-    client.subscribe(`d/${id}`);
+    client.subscribe(`d/${argv.id}`);
     setInterval( ()=> {
-        client.publish(`d/${id}`, JSON.stringify({'m':'Hello from mqtt.js client'}));
+        client.publish(`d/${argv.id}`, JSON.stringify({'m':'Hello from mqtt.js client'}));
     }, 5000)
 });
 
@@ -62,7 +63,6 @@ client.on('close', function (err) {
 
 client.on('message', function (topic, message) {
     // message is Buffer
-    console.log(`topic: ${topic}, message: ${message.toString()}`);
-    
+    console.log(`topic: ${topic}, message: ${message.toString()}`);   
 });
 

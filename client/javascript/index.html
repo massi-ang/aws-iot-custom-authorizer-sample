@@ -1,5 +1,5 @@
 <!--
- Copyright 2022 Amazon.com.
+ Copyright 2022 Massimiliano Angelino.
  SPDX-License-Identifier: MIT
 -->
 
@@ -32,17 +32,17 @@
         <script>
             let client=null
             function connect() {
-                endpoint=document.getElementById("endpoint").value
-                token=document.getElementById("token").value
-                authorizer=document.getElementById("authorizer").value
-                signature=encodeURIComponent(document.getElementById("signature").value)
-                id=document.getElementById("id").value
+                const endpoint=document.getElementById("endpoint").value
+                const token=document.getElementById("token").value
+                const authorizer=document.getElementById("authorizer").value
+                const signature=encodeURIComponent(document.getElementById("signature").value)
+                const id=document.getElementById("id").value
                 console.log(`Connecting to ${endpoint} with client id ${id} using ${authorizer} authorizer`)
-                query = `x-amz-customauthorizer-name=${authorizer}&token=${token}`
+                const query = `x-amz-customauthorizer-name=${authorizer}&token=${token}`
                 if (signature.length>0) {
                     query += `&x-amz-customauthorizer-signature=${signature}`
                 }
-                client = mqtt.connect(`wss://${endpoint}:443/mqtt?`+query, {});
+                const client = mqtt.connect(`wss://${endpoint}:443/mqtt?`+query, {});
 
                 client.on('connect', function () {
                     console.log('Connected')
